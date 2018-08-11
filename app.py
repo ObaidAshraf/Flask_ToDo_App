@@ -17,6 +17,39 @@ def index():
     if (tasks_count == 0):
         data["tasks"] = str(tasks_count) + " tasks are found"
         return (jsonify(data))
+    else:
+        tasks = tasks_db.find({})
+        data = {}
+        for task in tasks:
+            data[task["task"]["id"]] = {
+                "id": task["task"]["id"],
+                "title": task["task"]["title"],
+                "description": task["task"]["description"],
+                "done": bool(task["task"]["done"])
+            }
+        return (jsonify(data))
+
+@app.route("/todo/api/v1.0/tasks/<int:task_id>", methods = ['GET'])
+def get_task(task_id):
+    data = {}
+    tasks_db = mongo.db.tasks
+    tasks_count = tasks_db.find({}).count();
+    if (tasks_count == 0):
+        data["tasks"] = str(tasks_count) + " tasks are found"
+        return (jsonify(data))
+    else:
+        tasks = tasks_db.find({"id": task_id})
+        data = {}
+        for task in tasks:
+            data[task["id"]] = {
+                "id": task["id"],
+                "title": task["title"],
+                "description": task["description"],
+                "done": bool(task["done"])
+            }
+        return (jsonify(data))
+
+
 
 @app.route("/todo/api/v1.0/tasks", methods = ['POST'])
 def add_tasks():
@@ -26,16 +59,18 @@ def add_tasks():
     done = request.json["done"]
     tasks_db = mongo.db.tasks
     tasks_count = tasks_db.find({}).count();
-    task_info = {
+    tasks_db.insert({
         "id": tasks_count + 1,
         "title": title,
         "description": description,
         "done": done
-    }
-    tasks_db.insert({
-        "task": task_info
     })
-    return jsonify({"task": task_info})
+    return jsonify({
+        "id": tasks_count + 1,
+        "title": title,
+        "description": description,
+        "done": done
+    })
 
 
 app.run(debug=True, port = 8080)
