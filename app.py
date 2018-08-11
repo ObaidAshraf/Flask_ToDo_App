@@ -1,7 +1,5 @@
-from flask import Flask, request, url_for, render_template, jsonify, json
+from flask import Flask, request, url_for, render_template, jsonify, json, abort
 from flask_pymongo import PyMongo
-from bson.json_util import dumps
-import pprint
 
 app = Flask(__name__)
 app.config['MONGO_DBNAME'] = 'todo_db'
@@ -34,6 +32,8 @@ def get_task(task_id):
     data = {}
     tasks_db = mongo.db.tasks
     tasks = tasks_db.find({"id": task_id})
+    if tasks.count() == 0:
+        abort(500)
     data = {}
     for task in tasks:
         data[task["id"]] = {
@@ -46,7 +46,7 @@ def get_task(task_id):
 
 @app.route("/todo/api/v1.0/tasks", methods = ['POST'])
 def add_tasks():
-    id = request.json["id"]
+    #id = request.json["id"]
     title = request.json["title"]
     description = request.json.get('description', '')
     done = bool(request.json["done"])
@@ -70,12 +70,13 @@ def update_task(task_id):
     data = {}
     tasks_db = mongo.db.tasks
     task = tasks_db.find({"id": task_id})
+    if task.count() == 0:
+        abort(500)
     title = request.json.get("title", task[0]["title"])
     description = request.json.get('description', task[0]["description"])
     done = bool(request.json.get("done", task[0]["done"]))
-    print(task_id, title, description, done)
     update_query = tasks_db.update_one(
-        { "id": 1},
+        { "id": task_id},
         {
             '$set' : {
                 "title": title,
@@ -95,4 +96,12 @@ def delete_task(task_id):
     return ("Task with ID " + str(task_id) + " is successfully deleted.")
 
 
-app.run(debug=True, port = 8080)
+@app.errorhandler(404)
+def not_found_error(e):
+    return "URL doesn't exist"
+
+@app.errorhandler(500)
+def not_found_error(e):
+    return "Task not found"
+
+app.run(debug = True, port = 8080)
