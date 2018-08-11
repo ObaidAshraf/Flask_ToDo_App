@@ -9,8 +9,16 @@ app.config['MONGO_URI'] = 'mongodb://admin:admin123@ds219432.mlab.com:19432/todo
 
 mongo = PyMongo(app)
 
-@app.route("/")
+@app.route("/todo/api/v1.0/", methods = ['GET'])
 def index():
-    return "Hello World!"
+    data = {}
+    tasks_db = mongo.db.tasks
+    tasks_count = tasks_db.find({}).count();
+    if (tasks_count == 0):
+        data["tasks"] = str(tasks_count) + " tasks are found"
+        return (jsonify(data))
+
+
+
 
 app.run(debug=True, port = 8080)
