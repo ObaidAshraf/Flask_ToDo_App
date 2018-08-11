@@ -1,2 +1,2 @@
 # Flask_ToDo_App
-A TODO Application using Flask.
+A RESTful TODO Application using Flask.
