@@ -47,12 +47,14 @@ def get_task(task_id):
 @app.route("/todo/api/v1.0/tasks", methods = ['POST'])
 def add_tasks():
     #id = request.json["id"]
-    title = request.json["title"]
+    title = request.json.get("title", '')
+    if not title:
+        abort(500)
     description = request.json.get('description', '')
-    done = bool(request.json["done"])
+    done = request.json.get("done", True)
     tasks_db = mongo.db.tasks
-    tasks_count = tasks_db.find({}).count();
-    tasks_db.insert({
+    tasks_count = tasks_db.find().count();
+    tasks_db.insert_one({
         "id": tasks_count + 1,
         "title": title,
         "description": description,
@@ -90,6 +92,8 @@ def update_task(task_id):
 
 @app.route("/todo/api/v1.0/tasks/<int:task_id>", methods = ['DELETE'])
 def delete_task(task_id):
+    if not task_id:
+        abort(500)
     data = {}
     tasks_db = mongo.db.tasks
     tasks_db.delete_one({"id": task_id})
@@ -98,10 +102,11 @@ def delete_task(task_id):
 
 @app.errorhandler(404)
 def not_found_error(e):
-    return "URL doesn't exist"
+    return "URL doesn't exist", 404
 
 @app.errorhandler(500)
 def not_found_error(e):
-    return "Task not found"
+    return "Insufficient resources to complete the task", 500
 
-app.run(debug = True, port = 8080)
+if __name__ == '__main__':
+    app.run(debug = True, port = 8080)
