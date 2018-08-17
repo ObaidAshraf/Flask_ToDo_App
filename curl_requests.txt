@@ -1,0 +1,7 @@
+curl -s -i "http://localhost:8080/todo/api/v1.0/tasks"
+
+curl -s -i -H "Content-Type: application/json" -X POST -d '{"title":"learn Flask", "description":"", "done": false}' http://localhost:8080/todo/api/v1.0/tasks
+
+curl -s -i -H "Content-Type: application/json" -X PUT -d '{"done":true}' http://localhost:8080/todo/api/v1.0/tasks/1
+
+curl -s -i -H "Content-Type: application/json" -X DELETE http://localhost:8080/todo/api/v1.0/tasks/1
